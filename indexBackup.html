@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Angular.js Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js" charset="utf-8">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular-route.js" charset="utf-8">
+    </script>
+    <script type="text/javascript">
+      var mainApp = angular.module('mainApp', ['ngRoute']);
+      mainApp.config(function($routeProvider) {
+        $routeProvider.
+          when('/', {
+            template: '<ul><li ng-repeat="country in countries">{{country.name}}</li></ul>',
+            controller: 'CountryListCtrl'
+          }).
+          when('/:countryName', {
+            template: '<h1>Country Detail View</h1>',
+            controller: 'CountryDetailCtrl'
+          }).
+          otherwise({
+            redirectTo: '/'
+          });
+      });
+      mainApp.controller('NameCtrl', function($scope) {
+
+        $scope.firstName = "Nimish";
+
+        $scope.$watch('lastName', function(newValue, oldValue) {
+          console.log('New value is ' + newValue);
+        });
+
+        setTimeout(function(){
+          $scope.lastName = "David";
+          $scope.$apply();
+        }, 1000);
+
+        $scope.names = ['Nimish', 'Ranjith', 'Sajith'];
+
+        $scope.addName = function() {
+          $scope.names.push($scope.enteredName);
+          $scope.enteredName = '';
+        };
+
+        $scope.removeName = function(name) {
+          var i = $scope.names.indexOf(name);
+          $scope.names.splice(i,1);
+        };
+
+      });
+
+      mainApp.controller('CountryListCtrl', ['$scope', '$http', function(scope, http) {
+        http.get('countries.json').success(function(data) {
+          scope.countries = data;
+        });
+        scope.sortField = 'population';
+        scope.reverse = true;
+      }]);
+
+      mainApp.controller('CountryDetailCtrl', function($scope, $routeParams) {
+        console.log($routeParams);
+      });
+
+    </script>
+  </head>
+  <body ng-app="mainApp">
+
+    <div ng-controller="NameCtrl">
+      First Name:<input type="text" ng-model="firstName">
+      <br>
+      Last Name:<input type="text" ng-model="lastName">
+      <br>
+      Hello {{firstName}} {{lastName}}
+      <br><br>
+
+      <ul>
+        <li ng-repeat="name in names">
+
+          {{name}} <a href="" ng-click="removeName(name)">Remove</a>
+
+        </li>
+      </ul>
+
+      <form ng-submit="addName()">
+        <input type="text" ng-model="enteredName">
+        <input type="submit" value="Add">
+      </form>
+
+    </div>
+    <br><br>
+
+    <div ng-controller="CountryListCtrl">
+      Search :
+      <input type="text" ng-model="query">
+      <table>
+        <tr>
+          <th><a href="" ng-click="sortField = 'name'; reverse = !reverse">Country</a></th>
+          <th><a href="" ng-click="sortField = 'population'; reverse = !reverse">Population</a></th>
+        </tr>
+        <tr ng-repeat="country in countries | filter:query | orderBy:sortField:reverse">
+          <td>{{country.name}}</td>
+          <td>{{country.population | number}}</td>
+        </tr>
+      </table>
+    </div>
+
+  </body>
+</html>
